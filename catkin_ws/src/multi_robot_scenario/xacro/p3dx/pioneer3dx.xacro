@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="pioneer3dx" >
+
+  <!-- Import Rviz colors -->
+  <xacro:include filename="$(find multi_robot_scenario)/xacro/materials.xacro" />
+
+  <!-- Import robot -->
+  <xacro:include filename="$(find multi_robot_scenario)/xacro/p3dx/pioneer3dx_body.xacro"/>
+  <xacro:pioneer3dx_body name="chassis" parent="base_link" meshes="package://gazebo_plugins/test/multi_robot_scenario/meshes/p3dx"/>
+
+  <!-- Laser -->
+  <xacro:include filename="$(find multi_robot_scenario)/xacro/laser/hokuyo.xacro"/>
+  <xacro:laser name="front_laser" parent="chassis" xyz="0.125 0 0.25" rpy="0 0 0" meshes="package://gazebo_plugins/test/multi_robot_scenario/meshes/laser"/>
+
+
+  <!-- GPU Laser
+  <xacro:include filename="$(find multi_robot_scenario)/xacro/laser/hokuyo_gpu.xacro"/>
+  <xacro:laser_gpu name="front_laser" parent="chassis" xyz="0.16 0 0.1" rpy="0 0 0" meshes="package://gazebo_plugins/test/multi_robot_scenario/meshes/laser" />
+    -->
+  <xacro:include filename="$(find multi_robot_scenario)/xacro/camera/camera.xacro"/>
+  <xacro:cam name="front_camera" parent="chassis" xyz="0.025 0 0.32" rpy="0 0 0" />
+
+  <xacro:include filename="$(find multi_robot_scenario)/xacro/camera/cameraD.xacro"/>
+  <xacro:camD name="cameraD" parent="chassis" xyz="0.025 0 0.32" rpy="0 0 0" />
+  <!-- Velodyne -->
+  <xacro:include filename="$(find velodyne_description)/urdf/VLP-16.urdf.xacro"/>
+  <xacro:VLP-16 parent="base_link" name="velodyne" topic="/velodyne_points" hz="10" samples="360" gpu="false" min_angle="-1.57" max_angle="1.57" min_range="0.1">
+    <origin xyz="0.125 0 0.25" rpy="0 0 0" />
+  </xacro:VLP-16>
+
+
+</robot>
