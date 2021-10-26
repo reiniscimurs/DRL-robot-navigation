@@ -2,6 +2,20 @@
 
 Deep Reinforcement Learning for mobile robot navigation in ROS Gazebo simulator. Using Twin Delayed Deep Deterministic Policy Gradient (TD3) neural network, a robot learns to navigate to a random goal point in a simulated environment while avoiding obstacles. Obstacles are detected by laser readings and a goal is given to the robot in polar coordinates. Trained ir ROS Gazebo simulator with PyTorch. Developed with ROS Melodic on Ubuntu 18.04. (The current repository has not yet been fully tested yet, so if there any issues please post it in the issues section).
 
+
+**Pre-print of the article:**
+
+Some more information is given in the article at: https://arxiv.org/abs/2103.07119
+Please cite as:<br/>
+@misc{cimurs2021goaldriven,
+      title={Goal-Driven Autonomous Exploration Through Deep Reinforcement Learning}, 
+      author={Reinis Cimurs and Il Hong Suh and Jin Han Lee},
+      year={2021},
+      eprint={2103.07119},
+      archivePrefix={arXiv},
+      primaryClass={cs.RO}
+}
+
 Main dependencies: 
 
 * [ROS Melodic](http://wiki.ros.org/melodic/Installation)
