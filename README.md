@@ -8,13 +8,13 @@ Deep Reinforcement Learning for mobile robot navigation in ROS Gazebo simulator.
 Some more information is given in the article at: https://arxiv.org/abs/2103.07119
 
 Please cite as:<br/>
-@misc{cimurs2021goaldriven,
-      title={Goal-Driven Autonomous Exploration Through Deep Reinforcement Learning}, 
-      author={Reinis Cimurs and Il Hong Suh and Jin Han Lee},
-      year={2021},
-      eprint={2103.07119},
-      archivePrefix={arXiv},
-      primaryClass={cs.RO}
+@misc{cimurs2021goaldriven,<br/>
+      title={Goal-Driven Autonomous Exploration Through Deep Reinforcement Learning}, <br/>
+      author={Reinis Cimurs and Il Hong Suh and Jin Han Lee},<br/>
+      year={2021},<br/>
+      eprint={2103.07119},<br/>
+      archivePrefix={arXiv},<br/>
+      primaryClass={cs.RO}<br/>
 }
 
 Main dependencies: 
