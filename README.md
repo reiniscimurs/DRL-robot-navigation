@@ -14,6 +14,7 @@ $ cd ~
 $ git clone https://github.com/reiniscimurs/DRL-robot-navigation
 ```
 The network can be run with a standard 2D laser, but this implementation uses a simulated [3D Velodyne sensor](https://github.com/lmark1/velodyne_simulator)
+
 Compile the workspace:
 ```shell
 $ cd ~/DRL-robot-navigation/catkin_ws
@@ -33,4 +34,9 @@ $ source devel/setup.bash
 ### Run the training
 $ cd ~/DRL-robot-navigation/TD3
 $ python3 velodyne_td3.py
+```
+
+To kill the training process:
+```shell
+$ killall -9 rosout roslaunch rosmaster gzserver nodelet robot_state_publisher gzclient python python3
 ```
