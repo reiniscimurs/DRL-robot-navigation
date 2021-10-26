@@ -40,3 +40,14 @@ To kill the training process:
 ```shell
 $ killall -9 rosout roslaunch rosmaster gzserver nodelet robot_state_publisher gzclient python python3
 ```
+
+
+Gazebo environment:
+<p align="center">
+    <img width=40% src="https://github.com/reiniscimurs/DRL-robot-navigation/blob/main/env1.png">
+</p>
+
+Rviz:
+<p align="center">
+    <img width=40% src="https://github.com/reiniscimurs/DRL-robot-navigation/blob/main/velodyne.png">
+</p>
