@@ -2,6 +2,11 @@
 
 Deep Reinforcement Learning for mobile robot navigation in ROS Gazebo simulator. Using Twin Delayed Deep Deterministic Policy Gradient (TD3) neural network, a robot learns to navigate to a random goal point in a simulated environment while avoiding obstacles. Obstacles are detected by laser readings and a goal is given to the robot in polar coordinates. Trained ir ROS Gazebo simulator with PyTorch. Developed with ROS Melodic on Ubuntu 18.04. (The current repository has not yet been fully tested yet, so if there any issues please post it in the issues section).
 
+Training example:
+<p align="center">
+    <img width=100% src="https://github.com/reiniscimurs/DRL-robot-navigation/blob/main/training.gif">
+</p>
+
 
 **Pre-print of the article:**
 
@@ -59,10 +64,10 @@ $ killall -9 rosout roslaunch rosmaster gzserver nodelet robot_state_publisher g
 
 Gazebo environment:
 <p align="center">
-    <img width=40% src="https://github.com/reiniscimurs/DRL-robot-navigation/blob/main/env1.png">
+    <img width=80% src="https://github.com/reiniscimurs/DRL-robot-navigation/blob/main/env1.png">
 </p>
 
 Rviz:
 <p align="center">
-    <img width=40% src="https://github.com/reiniscimurs/DRL-robot-navigation/blob/main/velodyne.png">
+    <img width=80% src="https://github.com/reiniscimurs/DRL-robot-navigation/blob/main/velodyne.png">
 </p>
