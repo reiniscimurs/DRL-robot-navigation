@@ -50,7 +50,7 @@ $ export ROS_PORT_SIM=11311
 $ export GAZEBO_RESOURCE_PATH=~/DRL-robot-navigation/catkin_ws/src/multi_robot_scenario/launch
 $ source ~/.bashrc
 $ cd ~/DRL-robot-navigation/catkin_ws
-$ source devel/setup.bash
+$ source devel_isolated/setup.bash
 ### Run the training
 $ cd ~/DRL-robot-navigation/TD3
 $ python3 velodyne_td3.py
