@@ -4,7 +4,6 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-# from gazebo_laser_td3 import GazeboEnv
 from velodyne_env import GazeboEnv
 from replay_buffer2 import ReplayBuffer
 from collections import deque
@@ -114,7 +113,6 @@ class TD3(object):
     def train(self, replay_buffer, iterations, batch_size=100, discount=1, tau=0.005, policy_noise=0.2,  # discount=0.99
               noise_clip=0.5, policy_freq=2):
         for it in range(iterations):
-            # print(it)
             # sample a batch from the replay buffer
             batch_states, batch_actions, batch_rewards, batch_dones, batch_next_states = replay_buffer.sample_batch(
                 batch_size)
@@ -146,7 +144,6 @@ class TD3(object):
 
             # Calculate the loss between the current Q value and the target Q value
             loss = F.mse_loss(current_Q1, target_Q) + F.mse_loss(current_Q2, target_Q)
-            # loss = torch.sum(abs((target_Q-current_Q1)/target_Q) + abs((target_Q-current_Q2)/target_Q))
 
             # Perform the gradient descent
             self.critic_optimizer.zero_grad()
@@ -154,17 +151,20 @@ class TD3(object):
             self.critic_optimizer.step()
 
             if it % policy_freq == 0:
-                # Maximize the the actor output value by performing gradient descent on negative Q values (essentially perform gradient ascent)
+                # Maximize the the actor output value by performing gradient descent on negative Q values
+                # (essentially perform gradient ascent)
                 actor_grad, _ = self.critic(state, self.actor(state))
                 actor_grad = -actor_grad.mean()
                 self.actor_optimizer.zero_grad()
                 actor_grad.backward()
                 self.actor_optimizer.step()
 
-                # Use soft update to update the actor-target network parameters by infusing small amount of current parameters
+                # Use soft update to update the actor-target network parameters by
+                # infusing small amount of current parameters
                 for param, target_param in zip(self.actor.parameters(), self.actor_target.parameters()):
                     target_param.data.copy_(tau * param.data + (1 - tau) * target_param.data)
-                # Use soft update to update the critic-target network parameters by infusing small amount of current parameters
+                # Use soft update to update the critic-target network parameters by infusing
+                # small amount of current parameters
                 for param, target_param in zip(self.critic.parameters(), self.critic_target.parameters()):
                     target_param.data.copy_(tau * param.data + (1 - tau) * target_param.data)
 
@@ -196,13 +196,8 @@ policy_noise = 0.2  # Added noise for exploration
 noise_clip = 0.5  # Maximum clamping values of the noise
 policy_freq = 2  # Frequency of Actor network updates
 buffer_size = 1e6  # Maximum size of the buffer
-file_name = "TD3_Cheetah"  # name of the file to store the policy
-ml = 5
-tmp_state = deque(maxlen=ml)
-tmp_action = deque(maxlen=ml)
-tmp_reward = deque(maxlen=ml)
-tmp_done_bool = deque(maxlen=ml)
-tmp_next_state = deque(maxlen=ml)
+file_name = "TD3_velodyne"  # name of the file to store the policy
+random_near_obstacle = True # To take random actions near obstacles or not
 
 # Create the network storage folders
 if not os.path.exists("./results"):
@@ -211,7 +206,6 @@ if save_models and not os.path.exists("./pytorch_models"):
     os.makedirs("./pytorch_models")
 
 # Create the training environment
-# env = gym.make(env_name)
 env = GazeboEnv('multi_robot_scenario.launch', 1, 1, 1)
 time.sleep(5)
 # env.seed(seed)
@@ -227,7 +221,6 @@ network = TD3(state_dim, action_dim, max_action)
 replay_buffer = ReplayBuffer(buffer_size, seed)
 
 # Create evaluation data store
-# evaluations = [evaluate(network,eval_ep)]
 evaluations = []
 
 timestep = 0
@@ -244,10 +237,6 @@ while timestep < max_timesteps:
 
     # On termination of episode
     if done:
-
-        # for i in range(1, len(tmp_reward)):
-        #    replay_buffer.add(tmp_state[i], tmp_action[i], tmp_reward[i], tmp_done_bool[i], tmp_next_state[i])
-
         if timestep != 0:
             network.train(replay_buffer, episode_timesteps, batch_size, discount, tau, policy_noise, noise_clip,
                           policy_freq)
@@ -273,21 +262,27 @@ while timestep < max_timesteps:
     action = network.get_action(np.array(state))
     action = (action + np.random.normal(0, expl_noise, size=action_dim)).clip(-max_action, max_action)
 
-    if np.random.uniform(0, 1) > 0.85 and min(state[4:-8]) < 0.6 and count_rand_actions < 1:
-        count_rand_actions = np.random.randint(8, 15)
-        random_action = np.random.uniform(-1, 1, 2)
+    # If the robot is facing an obstacle, randomly force it to take a consistent random action.
+    # This is done to increase exploration in situations near obstacles.
+    # Training can also be performed without it
+    if random_near_obstacle:
+        if np.random.uniform(0, 1) > 0.85 and min(state[4:-8]) < 0.6 and count_rand_actions < 1:
+            count_rand_actions = np.random.randint(8, 15)
+            random_action = np.random.uniform(-1, 1, 2)
 
-    if count_rand_actions > 0:
-        count_rand_actions -= 1
-        action = random_action #(random_action + np.random.normal(0, expl_noise, size=action_dim)).clip(-max_action, max_action)
-        action[0] = -1
+        if count_rand_actions > 0:
+            count_rand_actions -= 1
+            action = random_action
+            action[0] = -1
 
+    # Update action to fall in range [0,1] for linear velocity and [-1,1] for angular velocity
     a_in = [(action[0] + 1) / 2, action[1]]
     next_state, reward, done, target = env.step(a_in)
     done_bool = 0 if episode_timesteps + 1 == max_ep else int(done)
     done = 1 if episode_timesteps + 1 == max_ep else int(done)
     episode_reward += reward
 
+    # Save the tuple in replay buffer
     replay_buffer.add(state, action, reward, done_bool, next_state)
 
     # Update the counters

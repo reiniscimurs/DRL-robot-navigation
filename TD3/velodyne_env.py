@@ -20,6 +20,7 @@ import time
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 
+# Check if the random goal position is located on an obstacle and do not accept it if it is
 def check_pos(x, y):
     goalOK = True
 
@@ -58,6 +59,7 @@ def check_pos(x, y):
     return goalOK
 
 
+# Function to put the laser data in bins
 def binning(lower_bound, data, quantity):
     width = round(len(data) / quantity)
     quantity -= 1
@@ -99,8 +101,6 @@ class GazeboEnv:
             self.gaps.append([self.gaps[m][1], self.gaps[m][1] + 3.14 / 20])
         self.gaps[-1][-1] += 0.03
 
-        # port = os.environ["ROS_PORT_SIM"]
-        # start roscore
         port = '11311'
         subprocess.Popen(["roscore", "-p", port])
 
@@ -108,23 +108,19 @@ class GazeboEnv:
 
         # Launch the simulation with the given launchfile name
         rospy.init_node('gym', anonymous=True)
-        # time.sleep(7)
         if launchfile.startswith("/"):
             fullpath = launchfile
         else:
             fullpath = os.path.join(os.path.dirname(__file__), "assets", launchfile)
-            # fullpath = os.path.join(os.path.dirname(__file__), "turtlebot", launchfile)
         if not path.exists(fullpath):
             raise IOError("File " + fullpath + " does not exist")
 
         subprocess.Popen(["roslaunch", "-p", port, fullpath])
         print("Gazebo launched!")
 
-        # time.sleep(3)
         self.gzclient_pid = 0
 
-        # env = gym.make('MultiRobotScenario-v0')
-
+        # Set up the ROS publishers and subscribers
         self.vel_pub = rospy.Publisher('/r1/cmd_vel', Twist, queue_size=1)
         self.set_state = rospy.Publisher('gazebo/set_model_state', ModelState, queue_size=10)
         self.unpause = rospy.ServiceProxy('/gazebo/unpause_physics', Empty)
@@ -138,27 +134,27 @@ class GazeboEnv:
         self.publisher3 = rospy.Publisher(topic3, MarkerArray, queue_size=1)
         topic4 = 'vis_mark_array4'
         self.publisher4 = rospy.Publisher(topic4, MarkerArray, queue_size=1)
-        self.velodyne = rospy.Subscriber('/velodyne_points', PointCloud2, self.velodyne_callback ,queue_size = 1)
+        self.velodyne = rospy.Subscriber('/velodyne_points', PointCloud2, self.velodyne_callback, queue_size=1)
 
+    # Read velodyne pointcloud and turn it into distance data, then select the minimum value for each angle
+    # range as state representation
     def velodyne_callback(self, v):
-        data = list(pc2.read_points(v,skip_nans= False, field_names=("x","y","z")))
-        self.velodyne_data = np.ones(20)*10
+        data = list(pc2.read_points(v, skip_nans=False, field_names=("x", "y", "z")))
+        self.velodyne_data = np.ones(20) * 10
         for i in range(len(data)):
-            #print(data[i][2])
             if data[i][2] > -0.2:
                 dot = data[i][0] * 1 + data[i][1] * 0
                 mag1 = math.sqrt(math.pow(data[i][0], 2) + math.pow(data[i][1], 2))
                 mag2 = math.sqrt(math.pow(1, 2) + math.pow(0, 2))
-                beta = math.acos(dot / (mag1 * mag2)) * np.sign(data[i][1])# * -1
-                dist = math.sqrt(data[i][0]**2 + data[i][1]**2 + data[i][2]**2)
+                beta = math.acos(dot / (mag1 * mag2)) * np.sign(data[i][1])  # * -1
+                dist = math.sqrt(data[i][0] ** 2 + data[i][1] ** 2 + data[i][2] ** 2)
 
                 for j in range(len(self.gaps)):
                     if self.gaps[j][0] <= beta < self.gaps[j][1]:
-                        self.velodyne_data[j] = min(self.velodyne_data[j],dist)
+                        self.velodyne_data[j] = min(self.velodyne_data[j], dist)
                         break
 
-        #print(self.velodyne_data)
-
+    # Detect a collision from laser data
     def calculate_observation(self, data):
         min_range = 0.3
         min_laser = 2
@@ -171,14 +167,12 @@ class GazeboEnv:
             if (min_range > data.ranges[i] > 0):
                 done = True
                 col = True
-                # print data.ranges[i]
-        # print ("Observation!")
         return done, col, min_laser
 
+    # Perform an action and read a new state
     def step(self, act):
         target = False
         rospy.wait_for_service('/gazebo/unpause_physics')
-        # print ("Step!")
         try:
             self.unpause()
         except (rospy.ServiceException) as e:
@@ -192,16 +186,9 @@ class GazeboEnv:
                 pass
 
         laser_state = np.array(data.ranges[:])
-        laser_state[laser_state == inf] = 10
-        laser_state = binning(0, laser_state, 20)
         v_state = []
         v_state[:] = self.velodyne_data[:]
-        #print(v_state)
-        #print(laser_state)
         laser_state = [v_state]
-
-        #print([v_state])
-        #laser_state = laser_state / 10
 
         done, col, min_laser = self.calculate_observation(data)
 
@@ -215,12 +202,11 @@ class GazeboEnv:
         rospy.wait_for_service('/gazebo/pause_physics')
         try:
             pass
-            # resp_pause = pause.call()
             self.pause()
         except (rospy.ServiceException) as e:
             print("/gazebo/pause_physics service call failed")
-        #time.sleep(1)
 
+        # Calculate robot heading from odometry data
         self.odomX = dataOdom.pose.pose.position.x
         self.odomY = dataOdom.pose.pose.position.y
         quaternion = Quaternion(
@@ -231,23 +217,22 @@ class GazeboEnv:
         euler = quaternion.to_euler(degrees=False)
         angle = round(euler[2], 4)
 
+        # Calculate distance to the goal from the robot
         Dist = math.sqrt(math.pow(self.odomX - self.goalX, 2) + math.pow(self.odomY - self.goalY, 2))
 
+        # Calculate the angle distance between the robots heading and heading toward the goal
         skewX = self.goalX - self.odomX
         skewY = self.goalY - self.odomY
-
         dot = skewX * 1 + skewY * 0
         mag1 = math.sqrt(math.pow(skewX, 2) + math.pow(skewY, 2))
         mag2 = math.sqrt(math.pow(1, 2) + math.pow(0, 2))
         beta = math.acos(dot / (mag1 * mag2))
-
         if skewY < 0:
             if skewX < 0:
                 beta = -beta
             else:
                 beta = 0 - beta
         beta2 = (beta - angle)
-
         if beta2 > np.pi:
             beta2 = np.pi - beta2
             beta2 = -np.pi - beta2
@@ -255,12 +240,13 @@ class GazeboEnv:
             beta2 = -np.pi - beta2
             beta2 = np.pi - beta2
 
+        # Publish the robot action
         vel_cmd = Twist()
         vel_cmd.linear.x = act[0]
         vel_cmd.angular.z = act[1]
-
         self.vel_pub.publish(vel_cmd)
 
+        # Publish visual data in Rviz
         markerArray = MarkerArray()
         marker = Marker()
         marker.header.frame_id = "base_link"
@@ -342,39 +328,38 @@ class GazeboEnv:
         markerArray4.markers.append(marker4)
         self.publisher4.publish(markerArray4)
 
-        # reward = act[0]*0.7-abs(act[1])
-        r1 = 1 - 2 * math.sqrt(abs(beta2 / np.pi))
-        r2 = self.distOld - Dist
-        r3 = lambda x: 1-x if x < 1 else 0.0
-        #rl = 0
-        #for r in range(len(laser_state[0])):
-        #    rl += r3(laser_state[0][r])
-        #reward = 0.8 * r1 + 30 * r2 + act[0]/2 - abs(act[1])/2 - r3(min(laser_state[0]))/2
-        reward = act[0] / 2 - abs(act[1]) / 2 - r3(min(laser_state[0])) / 2
-        #reward = 30 * r2 + act[0] / 2 - abs(act[1]) / 2  # - r3(min(laser_state[0]))/2
-        #reward = 0.8 * r1 + 30 * r2
-        #print("r1: ", 0.4*r1, " r2: ", 15*r2, " vr: ", act[0], " r3: ", r3(min(laser_state[0])))
-        self.distOld = Dist
-        #reward = act[0] * 0.7 - abs(act[1])
+        '''Bunch of different ways to generate the reward'''
 
-        if Dist < 0.3:# and act[0] > 0:
+        # reward = act[0]*0.7-abs(act[1])
+        # r1 = 1 - 2 * math.sqrt(abs(beta2 / np.pi))
+        # r2 = self.distOld - Dist
+        r3 = lambda x: 1 - x if x < 1 else 0.0
+        # rl = 0
+        # for r in range(len(laser_state[0])):
+        #    rl += r3(laser_state[0][r])
+        # reward = 0.8 * r1 + 30 * r2 + act[0]/2 - abs(act[1])/2 - r3(min(laser_state[0]))/2
+        reward = act[0] / 2 - abs(act[1]) / 2 - r3(min(laser_state[0])) / 2
+        # reward = 30 * r2 + act[0] / 2 - abs(act[1]) / 2  # - r3(min(laser_state[0]))/2
+        # reward = 0.8 * r1 + 30 * r2
+
+        self.distOld = Dist
+
+        # Detect if the goal has been reached and give a large positive reward
+        if Dist < 0.3:
             target = True
             done = True
-            #self.change_goal()
             self.distOld = math.sqrt(math.pow(self.odomX - self.goalX, 2) + math.pow(self.odomY - self.goalY, 2))
             reward = 80
 
+        # Detect if ta collision has happened and give a large negative reward
         if col:
             reward = -100
 
-        #Dist = min(Dist, 5.0)
-        #toGoal = [Dist / 5.0, (beta2 + np.pi) / (np.pi * 2)]
         toGoal = [Dist, beta2, act[0], act[1]]
         state = np.append(laser_state, toGoal)
-        return state, reward, done, target  # {}
+        return state, reward, done, target
 
     def reset(self):
-        # print ("Reset!")
 
         # Resets the state of the environment and returns an initial observation.
         rospy.wait_for_service('/gazebo/reset_world')
@@ -384,7 +369,6 @@ class GazeboEnv:
         except rospy.ServiceException as e:
             print("/gazebo/reset_simulation service call failed")
 
-        # print("set Reset!")
         angle = np.random.uniform(-np.pi, np.pi)
         quaternion = Quaternion.from_euler(0., 0., angle)
         object_state = self.set_self_state
@@ -410,11 +394,9 @@ class GazeboEnv:
 
         self.change_goal()
         self.random_box()
-
         self.distOld = math.sqrt(math.pow(self.odomX - self.goalX, 2) + math.pow(self.odomY - self.goalY, 2))
 
         data = None
-        # print('wait on laser now')
         rospy.wait_for_service('/gazebo/unpause_physics')
         try:
             self.unpause()
@@ -428,7 +410,6 @@ class GazeboEnv:
         laser_state = np.array(data.ranges[:])
         laser_state[laser_state == inf] = 10
         laser_state = binning(0, laser_state, 20)
-        #laser_state = laser_state / 10
 
         rospy.wait_for_service('/gazebo/pause_physics')
         try:
@@ -460,13 +441,11 @@ class GazeboEnv:
             beta2 = -np.pi - beta2
             beta2 = np.pi - beta2
 
-        #toGoal = [Dist / 5, (beta2 + np.pi) / (np.pi * 2)]
         toGoal = [Dist, beta2, 0.0, 0.0]
         state = np.append(laser_state, toGoal)
         return state
-        # Implemented in subclass
-        # raise NotImplementedError
 
+    # Place a new goal and check if its lov\cation is not on one of the obstacles
     def change_goal(self):
         if self.upper < 10:
             self.upper += 0.004
@@ -480,8 +459,7 @@ class GazeboEnv:
             self.goalY = self.odomY + random.uniform(self.upper, self.lower)
             gOK = check_pos(self.goalX, self.goalY)
 
-
-
+    # Randomly change the location of the boxes in the environment on each reset to randomize the training environment
     def random_box(self):
         for i in range(4):
             name = 'cardboard_box_' + str(i)
@@ -493,8 +471,8 @@ class GazeboEnv:
                 x = np.random.uniform(-6, 6)
                 y = np.random.uniform(-6, 6)
                 chk = check_pos(x, y)
-                d1 = math.sqrt((x-self.odomX)**2 + (y-self.odomY)**2)
-                d2 = math.sqrt((x-self.goalX)**2 + (y-self.goalY)**2)
+                d1 = math.sqrt((x - self.odomX) ** 2 + (y - self.odomY) ** 2)
+                d2 = math.sqrt((x - self.goalX) ** 2 + (y - self.goalY) ** 2)
                 if d1 < 1.5 or d2 < 1.5:
                     chk = False
             box_state = ModelState()
