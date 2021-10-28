@@ -27,7 +27,7 @@ def evaluate(network, eval_episodes=10, epoch=0):
     avg_reward /= eval_episodes
     avg_col = col/eval_episodes
     print("..............................................")
-    print("Average Reward over %i Evaluation Episodes %i: %f, %f" % (eval_episodes, epoch, avg_reward, avg_col))
+    print("Average Reward over %i Evaluation Episodes, Epoch %i: %f, %f" % (eval_episodes, epoch, avg_reward, avg_col))
     print("..............................................")
     return avg_reward
 
