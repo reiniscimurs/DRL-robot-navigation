@@ -171,13 +171,19 @@ class GazeboEnv:
 
     # Perform an action and read a new state
     def step(self, act):
+        # Publish the robot action
+        vel_cmd = Twist()
+        vel_cmd.linear.x = act[0]
+        vel_cmd.angular.z = act[1]
+        self.vel_pub.publish(vel_cmd)
+
         target = False
         rospy.wait_for_service('/gazebo/unpause_physics')
         try:
             self.unpause()
         except (rospy.ServiceException) as e:
             print("/gazebo/unpause_physics service call failed")
-
+        time.sleep(0.1)
         data = None
         while data is None:
             try:
@@ -185,26 +191,26 @@ class GazeboEnv:
             except:
                 pass
 
-        laser_state = np.array(data.ranges[:])
-        v_state = []
-        v_state[:] = self.velodyne_data[:]
-        laser_state = [v_state]
-
-        done, col, min_laser = self.calculate_observation(data)
-
         dataOdom = None
         while dataOdom is None:
             try:
                 dataOdom = rospy.wait_for_message('/r1/odom', Odometry, timeout=0.5)
             except:
                 pass
-        time.sleep(0.1)
+
         rospy.wait_for_service('/gazebo/pause_physics')
         try:
             pass
             self.pause()
         except (rospy.ServiceException) as e:
             print("/gazebo/pause_physics service call failed")
+
+        laser_state = np.array(data.ranges[:])
+        v_state = []
+        v_state[:] = self.velodyne_data[:]
+        laser_state = [v_state]
+
+        done, col, min_laser = self.calculate_observation(data)
 
         # Calculate robot heading from odometry data
         self.odomX = dataOdom.pose.pose.position.x
@@ -240,16 +246,12 @@ class GazeboEnv:
             beta2 = -np.pi - beta2
             beta2 = np.pi - beta2
 
-        # Publish the robot action
-        vel_cmd = Twist()
-        vel_cmd.linear.x = act[0]
-        vel_cmd.angular.z = act[1]
-        self.vel_pub.publish(vel_cmd)
+
 
         # Publish visual data in Rviz
         markerArray = MarkerArray()
         marker = Marker()
-        marker.header.frame_id = "base_link"
+        marker.header.frame_id = "odom"
         marker.type = marker.CYLINDER
         marker.action = marker.ADD
         marker.scale.x = 0.1
@@ -270,7 +272,7 @@ class GazeboEnv:
 
         markerArray2 = MarkerArray()
         marker2 = Marker()
-        marker2.header.frame_id = "base_link"
+        marker2.header.frame_id = "odom"
         marker2.type = marker.CUBE
         marker2.action = marker.ADD
         marker2.scale.x = abs(act[0])
@@ -290,7 +292,7 @@ class GazeboEnv:
 
         markerArray3 = MarkerArray()
         marker3 = Marker()
-        marker3.header.frame_id = "base_link"
+        marker3.header.frame_id = "odom"
         marker3.type = marker.CUBE
         marker3.action = marker.ADD
         marker3.scale.x = abs(act[1])
@@ -310,7 +312,7 @@ class GazeboEnv:
 
         markerArray4 = MarkerArray()
         marker4 = Marker()
-        marker4.header.frame_id = "base_link"
+        marker4.header.frame_id = "odom"
         marker4.type = marker.CUBE
         marker4.action = marker.ADD
         marker4.scale.x = 0.1  # abs(act2)
