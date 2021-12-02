@@ -2,7 +2,7 @@
 
 <arg name="gui" value="true"/>
    <!-- Gazebo  -->
-  <include file="$(find gazebo_ros)/launch/empty_world.launch" />
+  <include file="$(find multi_robot_scenario)/launch/empty_worldsdf.launch" />
 
   <!-- Robot with diff drive -->
   <include file="$(find multi_robot_scenario)/launch/pioneer3dx.gazebo.launch">
@@ -16,10 +16,11 @@
    </include >-->
 
 
-  <node pkg="tf" type="static_transform_publisher" name="base_to_odom_r1"
+  <!--<node pkg="tf" type="static_transform_publisher" name="base_to_odom_r1"
      args="0.0 -0.0 0.0 0.0 0.0 0.0 base_link r1/odom 200" />
+     
 
- <!-- <node pkg="tf" type="static_transform_publisher" name="base_to_odom_r2"
+  <node pkg="tf" type="static_transform_publisher" name="base_to_odom_r2"
      args="0.0  0.0 0.0 0.0 0.0 0.0 base_link r2/odom 200" />-->
 
   <!-- RVIZ -->
