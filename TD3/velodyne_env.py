@@ -172,6 +172,13 @@ class GazeboEnv:
     # Perform an action and read a new state
     def step(self, act):
         target = False
+        
+        # Publish the robot action
+        vel_cmd = Twist()
+        vel_cmd.linear.x = act[0]
+        vel_cmd.angular.z = act[1]
+        self.vel_pub.publish(vel_cmd)
+        
         rospy.wait_for_service('/gazebo/unpause_physics')
         try:
             self.unpause()
