@@ -85,6 +85,8 @@ class GazeboEnv:
         self.upper = 5.0
         self.lower = -5.0
         self.velodyne_data = np.ones(20) * 10
+        self.last_laser = None
+        self.last_odom = None
 
         self.set_self_state = ModelState()
         self.set_self_state.model_name = 'r1'
@@ -135,6 +137,8 @@ class GazeboEnv:
         topic4 = 'vis_mark_array4'
         self.publisher4 = rospy.Publisher(topic4, MarkerArray, queue_size=1)
         self.velodyne = rospy.Subscriber('/velodyne_points', PointCloud2, self.velodyne_callback, queue_size=1)
+        self.laser = rospy.Subscriber('/r1/front_laser/scan', LaserScan, self.laser_callback, queue_size=1)
+        self.odom = rospy.Subscriber('/r1/odom', Odometry, self.odom_callback, queue_size=1)
 
     # Read velodyne pointcloud and turn it into distance data, then select the minimum value for each angle
     # range as state representation
@@ -153,6 +157,12 @@ class GazeboEnv:
                     if self.gaps[j][0] <= beta < self.gaps[j][1]:
                         self.velodyne_data[j] = min(self.velodyne_data[j], dist)
                         break
+
+    def laser_callback(self, scan):
+        self.last_laser = scan
+
+    def odom_callback(self, od_data):
+        self.last_odom = od_data
 
     # Detect a collision from laser data
     def calculate_observation(self, data):
@@ -183,21 +193,23 @@ class GazeboEnv:
             self.unpause()
         except (rospy.ServiceException) as e:
             print("/gazebo/unpause_physics service call failed")
+
         time.sleep(0.1)
-        data = None
-        while data is None:
-            try:
-                data = rospy.wait_for_message('/r1/front_laser/scan', LaserScan, timeout=0.5)
-            except:
-                pass
 
-        dataOdom = None
-        while dataOdom is None:
-            try:
-                dataOdom = rospy.wait_for_message('/r1/odom', Odometry, timeout=0.5)
-            except:
-                pass
+        # dataOdom = None
+        # while dataOdom is None:
+        #     try:
+        #         dataOdom = rospy.wait_for_message('/r1/odom', Odometry, timeout=0.1)
+        #     except:
+        #         pass
 
+        # data = None
+        # while data is None:
+        #     try:
+        #         data = rospy.wait_for_message('/r1/front_laser/scan', LaserScan, timeout=0.1)
+        #     except:
+        #         pass
+        # time.sleep(0.1)
         rospy.wait_for_service('/gazebo/pause_physics')
         try:
             pass
@@ -205,12 +217,19 @@ class GazeboEnv:
         except (rospy.ServiceException) as e:
             print("/gazebo/pause_physics service call failed")
 
+
+
+
+        data = self.last_laser
+        dataOdom = self.last_odom
         laser_state = np.array(data.ranges[:])
         v_state = []
         v_state[:] = self.velodyne_data[:]
         laser_state = [v_state]
 
         done, col, min_laser = self.calculate_observation(data)
+
+
 
         # Calculate robot heading from odometry data
         self.odomX = dataOdom.pose.pose.position.x
