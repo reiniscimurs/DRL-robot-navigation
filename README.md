@@ -8,19 +8,22 @@ Training example:
 </p>
 
 
-**Pre-print of the article:**
+**The implementation of this method has been accepted and published in IEEE RA-L:**
 
-Some more information is given in the article at: https://arxiv.org/abs/2103.07119
+Some more information about the implementation is available [here](https://ieeexplore.ieee.org/document/9645287?source=authoralert)
 
 Please cite as:<br/>
-@misc{cimurs2021goaldriven,<br/>
-      title={Goal-Driven Autonomous Exploration Through Deep Reinforcement Learning}, <br/>
-      author={Reinis Cimurs and Il Hong Suh and Jin Han Lee},<br/>
-      year={2021},<br/>
-      eprint={2103.07119},<br/>
-      archivePrefix={arXiv},<br/>
-      primaryClass={cs.RO}<br/>
-}
+```
+@ARTICLE{9645287,
+  author={Cimurs, Reinis and Suh, Il Hong and Lee, Jin Han},
+  journal={IEEE Robotics and Automation Letters}, 
+  title={Goal-Driven Autonomous Exploration Through Deep Reinforcement Learning}, 
+  year={2022},
+  volume={7},
+  number={2},
+  pages={730-737},
+  doi={10.1109/LRA.2021.3133591}}
+```
 
 Main dependencies: 
 
