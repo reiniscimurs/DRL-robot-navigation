@@ -30,7 +30,7 @@ Please cite as:<br/>
 
 Main dependencies: 
 
-* [ROS Melodic](http://wiki.ros.org/melodic/Installation)
+* [ROS Noetic](http://wiki.ros.org/noetic/Installation)
 * [PyTorch](https://pytorch.org/get-started/locally/)
 
 Clone the repository:
