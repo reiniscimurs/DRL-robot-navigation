@@ -13,7 +13,7 @@
   <arg name="debug" default="false"/>
   <arg name="physics" default="ode"/>
   <arg name="verbose" default="false"/>
-  <arg name="world_name" default="TD3-2.world"/>
+  <arg name="world_name" default="TD3.world"/>
  <!-- <arg name="world_name" default="h_h.world"/> -->
   <arg name="respawn_gazebo" default="true"/>
   <arg name="use_clock_frequency" default="false"/>
