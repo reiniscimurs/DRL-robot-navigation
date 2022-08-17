@@ -32,6 +32,7 @@ Main dependencies:
 
 * [ROS Noetic](http://wiki.ros.org/noetic/Installation)
 * [PyTorch](https://pytorch.org/get-started/locally/)
+* [Tensorboard](https://github.com/tensorflow/tensorboard)
 
 Clone the repository:
 ```shell
@@ -57,9 +58,18 @@ $ export GAZEBO_RESOURCE_PATH=~/DRL-robot-navigation/catkin_ws/src/multi_robot_s
 $ source ~/.bashrc
 $ cd ~/DRL-robot-navigation/catkin_ws
 $ source devel_isolated/setup.bash
-### Run the training
+```
+
+Run the training:
+```shell
 $ cd ~/DRL-robot-navigation/TD3
-$ python3 velodyne_td3.py
+$ python3 train_velodyne_td3.py
+```
+
+To check the training process on tensorboard:
+```shell
+$ cd ~/DRL-robot-navigation/TD3
+$ tensorboard --logdir runs
 ```
 
 To kill the training process:
@@ -67,6 +77,11 @@ To kill the training process:
 $ killall -9 rosout roslaunch rosmaster gzserver nodelet robot_state_publisher gzclient python python3
 ```
 
+Once training is completed, test the model:
+```shell
+$ cd ~/DRL-robot-navigation/TD3
+$ python3 test_velodyne_td3.py
+```
 
 Gazebo environment:
 <p align="center">
