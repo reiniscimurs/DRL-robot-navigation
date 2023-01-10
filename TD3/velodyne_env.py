@@ -21,6 +21,10 @@ GOAL_REACHED_DIST = 0.3
 COLLISION_DIST = 0.35
 TIME_DELTA = 0.1
 
+# Set a height (in velodyne reference frame) at which to start filtering out the ground
+# Approximate default values: Pioneer P3DX -0.2, Turtlebot Burger -0.122, Turtlebot waffle -0.072
+FILTER_GROUND_HEIGHT = -0.072
+
 
 # Check if the random goal position is located on an obstacle and do not accept it if it is
 def check_pos(x, y):
@@ -135,8 +139,10 @@ class GazeboEnv:
     def velodyne_callback(self, v):
         data = list(pc2.read_points(v, skip_nans=False, field_names=("x", "y", "z")))
         self.velodyne_data = np.ones(self.environment_dim) * 10
+
+
         for i in range(len(data)):
-            if data[i][2] > -0.2:
+            if data[i][2] > FILTER_GROUND_HEIGHT:
                 dot = data[i][0] * 1 + data[i][1] * 0
                 mag1 = math.sqrt(math.pow(data[i][0], 2) + math.pow(data[i][1], 2))
                 mag2 = math.sqrt(math.pow(1, 2) + math.pow(0, 2))
@@ -187,6 +193,8 @@ class GazeboEnv:
         # Calculate robot heading from odometry data
         self.odom_x = self.last_odom.pose.pose.position.x
         self.odom_y = self.last_odom.pose.pose.position.y
+        self.odom_x = 0
+        self.odom_y = 0
         quaternion = Quaternion(
             self.last_odom.pose.pose.orientation.w,
             self.last_odom.pose.pose.orientation.x,
