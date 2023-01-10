@@ -139,8 +139,6 @@ class GazeboEnv:
     def velodyne_callback(self, v):
         data = list(pc2.read_points(v, skip_nans=False, field_names=("x", "y", "z")))
         self.velodyne_data = np.ones(self.environment_dim) * 10
-
-
         for i in range(len(data)):
             if data[i][2] > FILTER_GROUND_HEIGHT:
                 dot = data[i][0] * 1 + data[i][1] * 0
@@ -193,8 +191,6 @@ class GazeboEnv:
         # Calculate robot heading from odometry data
         self.odom_x = self.last_odom.pose.pose.position.x
         self.odom_y = self.last_odom.pose.pose.position.y
-        self.odom_x = 0
-        self.odom_y = 0
         quaternion = Quaternion(
             self.last_odom.pose.pose.orientation.w,
             self.last_odom.pose.pose.orientation.x,
