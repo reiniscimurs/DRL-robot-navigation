@@ -2,15 +2,18 @@
 <arg name="gui" value="false"/>
 
    <!-- Gazebo  -->
-  <include file="$(find multi_robot_scenario)/launch/empty_world.launch" />
+  <include file="$(find turtlebot3_bringup)/launch/empty_world.launch" />
 
-  <!-- Robot with diff drive -->
-  <include file="$(find multi_robot_scenario)/launch/pioneer3dx.gazebo.launch">
-     <arg name="robot_name" value="r1" />
+   
+   <!-- Robot with diff drive -->
+  <include file="$(find turtlebot3_bringup)/launch/turtlebot3_model.launch">
+     <arg name="model" value="waffle" />
+     <arg name="multi_robot_name" value="r1"/>
      <arg name="robot_position" value="-x 0.0 -y 0.0 -z 0.01 -R 0 -P 0 -Y +0.0" />
    </include>
+   
 
-  <!-- RVIZ -->
-  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find multi_robot_scenario)/launch/pioneer3dx.rviz" />
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find turtlebot3_description)/rviz/model.rviz"/>
+  
 
 </launch>
