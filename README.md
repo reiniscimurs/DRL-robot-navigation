@@ -1,7 +1,7 @@
 # DRL-robot-navigation
 
 
-Deep Reinforcement Learning for mobile robot navigation in ROS Gazebo simulator. Using Twin Delayed Deep Deterministic Policy Gradient (TD3) neural network, a robot learns to navigate to a random goal point in a simulated environment while avoiding obstacles. Obstacles are detected by laser readings and a goal is given to the robot in polar coordinates. Trained in ROS Gazebo simulator with PyTorch.  Tested with ROS Noetic on Ubuntu 20.04 with python 3.8.10 and pytorch 1.10.
+Turtlebot branch of Deep Reinforcement Learning for mobile robot navigation in ROS Gazebo simulator. Using Twin Delayed Deep Deterministic Policy Gradient (TD3) neural network, a robot learns to navigate to a random goal point in a simulated environment while avoiding obstacles. Obstacles are detected by laser readings and a goal is given to the robot in polar coordinates. Trained in ROS Gazebo simulator with PyTorch.  Tested with ROS Noetic on Ubuntu 20.04 with python 3.8.10 and pytorch 1.10.
 
 **Installation and code overview tutorial available** [here](https://medium.com/@reinis_86651/deep-reinforcement-learning-in-mobile-robot-navigation-tutorial-part1-installation-d62715722303)
 
@@ -44,12 +44,13 @@ $ cd ~
 $ git clone https://github.com/reiniscimurs/DRL-robot-navigation
 ```
 The network can be run with a standard 2D laser, but this implementation uses a simulated [3D Velodyne sensor](https://github.com/lmark1/velodyne_simulator)
+This implementation branch supports turtlebot3 as robot models[Turtlebot3](https://github.com/ROBOTIS-GIT/turtlebot3)
 
 Compile the workspace:
 ```shell
 $ cd ~/DRL-robot-navigation/catkin_ws
 ### Compile
-$ catkin_make_isolated
+$ catkin_make
 ```
 
 Open a terminal and set up sources:
@@ -60,7 +61,7 @@ $ export ROS_PORT_SIM=11311
 $ export GAZEBO_RESOURCE_PATH=~/DRL-robot-navigation/catkin_ws/src/multi_robot_scenario/launch
 $ source ~/.bashrc
 $ cd ~/DRL-robot-navigation/catkin_ws
-$ source devel_isolated/setup.bash
+$ source devel/setup.bash
 ```
 
 Run the training:
@@ -85,6 +86,18 @@ Once training is completed, test the model:
 $ cd ~/DRL-robot-navigation/TD3
 $ python3 test_velodyne_td3.py
 ```
+
+## Selecting Turtlebot Type
+In file multi_robot_scenario.launch file change the value of following line to select the robot type:
+https://github.com/reiniscimurs/DRL-robot-navigation/blob/12afc9558d864ff0312e4e52d430f2a9beefcade/TD3/assets/multi_robot_scenario.launch#L10
+
+Supported turtlebo3 robot types - burger, waffle, waffle_pi
+
+Turtlebot3 robots:
+<p align="left">
+    <img width=40% src="https://github.com/reiniscimurs/DRL-robot-navigation/blob/Noetic-Turtlebot/waffle.png">
+    <img width=35.4% src="https://github.com/reiniscimurs/DRL-robot-navigation/blob/Noetic-Turtlebot/burger.png">
+</p>
 
 Gazebo environment:
 <p align="center">
