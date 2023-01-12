@@ -10,7 +10,7 @@ Training example:
 </p>
 
 
-**The implementation of this method has been accepted for ICRA 2022 and published in IEEE RA-L:**
+**ICRA 2022 and IEEE RA-L paper:**
 
 Some more information about the implementation is available [here](https://ieeexplore.ieee.org/document/9645287?source=authoralert)
 
