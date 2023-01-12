@@ -87,7 +87,14 @@ $ cd ~/DRL-robot-navigation/TD3
 $ python3 test_velodyne_td3.py
 ```
 
-## Selecting Turtlebot Type
+## Turtlebot setup
+Install Turtlebot3 packages:
+```shell
+$ sudo apt-get install ros-kinetic-dynamixel-sdk
+$ sudo apt-get install ros-kinetic-turtlebot3-msgs
+$ sudo apt-get install ros-kinetic-turtlebot3
+```
+
 In file multi_robot_scenario.launch file change the value of following line to select the robot type:
 https://github.com/reiniscimurs/DRL-robot-navigation/blob/12afc9558d864ff0312e4e52d430f2a9beefcade/TD3/assets/multi_robot_scenario.launch#L10
 
