@@ -1,14 +1,14 @@
 ---
-name: Bug report
-about: Create a report to help us improve
+name: Issue
+about: Issue template
 title: ''
 labels: ''
 assignees: ''
 
 ---
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+**Describe the issue**
+A clear and concise description of what the issue is.
 
 **To Reproduce**
 Steps to reproduce the behavior:
@@ -19,7 +19,14 @@ A clear and concise description of what you expected to happen.
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
 
-**Desktop (please complete the following information):**
+**Log output**
+If applicable, full log output.
+
+**Preliminaries**
+ - Have you checked the tutorial for answers to your issue?
+ - Have you checked prior issues for answer to your issue?
+
+**Provide information about your setup:**
  - OS:
  - ROS version:
  - Repository branch:
