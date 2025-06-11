@@ -360,5 +360,5 @@ while timestep < max_timesteps:
 # After the training is done, evaluate the network and save it
 evaluations.append(evaluate(network=network, epoch=epoch, eval_episodes=eval_ep))
 if save_model:
-    network.save("%s" % file_name, directory="./models")
+    network.save("%s" % file_name, directory="./pytorch_models")
 np.save("./results/%s" % file_name, evaluations)
